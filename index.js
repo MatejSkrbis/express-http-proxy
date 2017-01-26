@@ -72,7 +72,9 @@ module.exports = function proxy(host, options) {
       asBuffer(bodyContent, options) :
       asBufferOrString(bodyContent);
 
-    reqOpt.headers['content-length'] = getContentLength(bodyContent);
+    if (reqOpt.method !== 'GET' && reqOpt.headers['transfer-encoding'] !== 'chunked') {
+      reqOpt.headers['content-length'] = getContentLength(bodyContent);
+    }
 
     if (bodyEncoding(options)) {
       reqOpt.headers['Accept-Charset'] = bodyEncoding(options);
@@ -331,7 +333,7 @@ function maybeParseBody(req, limit) {
   } else {
     // Returns a promise if no callback specified and global Promise exists.
     promise = getRawBody(req, {
-      length: req.headers['content-length'],
+      length: req.headers['content-length'] ? req.headers['content-length'] : 0,
       limit: limit,
     });
   }
